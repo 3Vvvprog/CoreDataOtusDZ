@@ -9,6 +9,7 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
+    @EnvironmentObject var viewModel: ViewModel
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(
@@ -17,30 +18,38 @@ struct ContentView: View {
     private var items: FetchedResults<Item>
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+        ZStack {
+            Color.white.ignoresSafeArea()
+            
+            ScrollView {
+                
+                LazyVGrid(columns: [.init(.flexible(minimum: 0, maximum: 1000))]) {
+                    if viewModel.characters.isEmpty {
+                        ProgressView()
+                    }else {
+                        ForEach(viewModel.characters) { character in
+                            ItemRaw(character: character)
+                                .environmentObject(viewModel)
+                                .onAppear {
+                                    if character.id == viewModel.characters.last?.id && viewModel.hasMoreData {
+                                        viewModel.loadCharacters()
+                                        print(character.id, viewModel.characters.last?.id)
+                                        
+                                    }
+                                }
+                        }
                     }
                 }
-                .onDelete(perform: deleteItems)
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+        }
+        .onAppear {
+            if viewModel.characters.isEmpty {
+                viewModel.loadCharacters()
             }
-            Text("Select an item")
         }
     }
+    
+    
 
     private func addItem() {
         withAnimation {
@@ -82,5 +91,7 @@ private let itemFormatter: DateFormatter = {
 }()
 
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
+        .environmentObject(ViewModel())
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }

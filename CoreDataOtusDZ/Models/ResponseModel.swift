@@ -1,5 +1,5 @@
 //
-//  CharacterModel.swift
+//  ResponseModel.swift
 //  CoreDataOtusDZ
 //
 //  Created by Вячеслав Вовк on 13.02.2025.
@@ -9,10 +9,10 @@
 import Foundation
 
 
-// MARK: - CharacterModel
+// MARK: - ResponseModel
 struct ResponseModel: Codable {
     let info: Info
-    let results: [Result]
+    let results: [CharacrterModel]
 }
 
 // MARK: - Info
@@ -22,14 +22,14 @@ struct Info: Codable {
     let prev: String?
 }
 
-// MARK: - Result
-struct Result: Codable {
+// MARK: - CharacrterModel
+struct CharacrterModel: Codable, Identifiable {
     let id: Int
     let name: String
     let status: Status
-    let species: Species
+    let species: String
     let type: String
-    let gender: Gender
+    let gender: String
     let origin, location: Location
     let image: String
     let episode: [String]
@@ -52,6 +52,8 @@ struct Location: Codable {
 enum Species: String, Codable {
     case alien = "Alien"
     case human = "Human"
+    case humanoid = "Humanoid"
+    case unknown
 }
 
 enum Status: String, Codable {
